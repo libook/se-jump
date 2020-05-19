@@ -1,0 +1,109 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>星球附近的最近跃迁点</title>
+    <script>
+        const GPS_REGEXP = /^GPS:[^:]*(:[0-9-.]+){3}:$/
+
+        const findPoint = (Xs, Ys, Zs, Xp, Yp, Zp, type) => {
+            const Rp = (() => {
+                if (type === 'Planet') {
+                    return 120 * 1000 / 2;
+                } else if (type === 'Moon') {
+                    return 19 * 1000 / 2;
+                }
+            })();
+
+            const Kt = Rp * (1 + 0.7182);
+
+            const Ksp = ((Xs - Xp) ** 2 + (Ys - Yp) ** 2 + (Zs - Zp) ** 2) ** 0.5;
+            console.log(Ksp);
+
+            const T = Kt / Ksp;
+            console.log(T);
+
+            const
+                Xt = Xp + (Xs - Xp) * T,
+                Yt = Yp + (Ys - Yp) * T,
+                Zt = Zp + (Zs - Zp) * T;
+
+            return { Xt, Yt, Zt };
+        }
+
+        const gpsParser = (gpsString) => {
+            if (GPS_REGEXP.test(gpsString)) {
+                const [, name, x, y, z] = gpsString.split(':');
+                return {
+                    name,
+                    "x": parseFloat(x),
+                    "y": parseFloat(y),
+                    "z": parseFloat(z),
+                };
+            } else {
+                return undefined;
+            }
+        };
+        const gpsToString = (gpsObject) => {
+            return `GPS:${gpsObject.name}:${gpsObject.x}:${gpsObject.y}:${gpsObject.z}:`
+        };
+
+        window.change = () => {
+            const targetGps = document.getElementById('targetGps');
+            targetGps.value = '';
+
+            const
+                shipGps = document.getElementById('shipGps').value,
+                planetGps = document.getElementById('planetGps').value;
+            const
+                shipGpsObj = gpsParser(shipGps),
+                planetGpsObj = gpsParser(planetGps);
+
+            const radioElementList = document.getElementsByName('type');
+            const type = (() => {
+                for (const radioElement of radioElementList) {
+                    if (radioElement.checked) {
+                        return radioElement.value;
+                    }
+                }
+            })();
+
+            if (shipGpsObj !== undefined && planetGpsObj !== undefined) {
+                const { Xt, Yt, Zt } = findPoint(
+                    shipGpsObj.x,
+                    shipGpsObj.y,
+                    shipGpsObj.z,
+                    planetGpsObj.x,
+                    planetGpsObj.y,
+                    planetGpsObj.z,
+                    type,
+                );
+                targetGps.value = gpsToString({
+                    "name": `${shipGpsObj.name}-jump`,
+                    "x": Xt,
+                    "y": Yt,
+                    "z": Zt,
+                });
+            }
+        };
+    </script>
+    <style>
+        input[ type="text"] {
+            width: 500px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div>
+            <label><input type="radio" name="type" onchange="change()" value="Planet">行星</label>
+            <label><input type="radio" name="type" onchange="change()" value="Moon">卫星</label>
+        </div>
+        <div><label>飞船GPS：<input type="text" id="shipGps" onchange="change()"></label></div>
+        <div><label>行星GPS：<input type="text" id="planetGps" onchange="change()"></label></div>
+        <div><label>跃迁最近GPS：<input type="text" readonly id="targetGps"></input></label></div>
+    </div>
+</body>
+
+</html>
