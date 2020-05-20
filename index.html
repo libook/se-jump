@@ -76,8 +76,8 @@
                 && planetGpsObj !== undefined
                 && (
                     shipGpsObj.x !== planetGpsObj.x
-                    && shipGpsObj.y !== planetGpsObj.y
-                    && shipGpsObj.z !== planetGpsObj.z
+                    || shipGpsObj.y !== planetGpsObj.y
+                    || shipGpsObj.z !== planetGpsObj.z
                 )
             ) {
                 const { Xt, Yt, Zt } = findPoint(
