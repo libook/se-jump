@@ -103,12 +103,12 @@
         <div><label>飞船GPS：<input type="text" id="shipGps" onchange="change()"></label></div>
         <div><label>行星GPS：<input type="text" id="planetGps" onchange="change()"></label></div>
         <div>
-            <button onclick="document.getElementById('planetGps').value='GPS:Earth:0:0:0:'">地球</button>
-            <button onclick="document.getElementById('planetGps').value='GPS:Moon:16384:136384:-113616:'">月球</button>
-            <button onclick="document.getElementById('planetGps').value='GPS:Mars:1031072:131072:1631072:'">火星</button>
-            <button onclick="document.getElementById('planetGps').value='GPS:Europa:916384:16384:1616384:'">欧罗巴</button>
-            <button onclick="document.getElementById('planetGps').value='GPS:Alien:131072:131072:5731072:'">异星</button>
-            <button onclick="document.getElementById('planetGps').value='GPS:Titan:36384:226384:5796384:'">泰坦</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Earth:0:0:0:';document.querySelector('input[value=Planet]').checked=true;">地球</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Moon:16384:136384:-113616:';document.querySelector('input[value=Moon]').checked=true;">月球</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Mars:1031072:131072:1631072:';document.querySelector('input[value=Planet]').checked=true;">火星</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Europa:916384:16384:1616384:';document.querySelector('input[value=Moon]').checked=true;">欧罗巴</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Alien:131072:131072:5731072:';document.querySelector('input[value=Planet]').checked=true;">异星</button>
+            <button onclick="document.getElementById('planetGps').value='GPS:Titan:36384:226384:5796384:';document.querySelector('input[value=Moon]').checked=true;">泰坦</button>
         </div>
         <div><label>跃迁最近GPS：<input type="text" readonly id="targetGps"></input></label></div>
     </div>
