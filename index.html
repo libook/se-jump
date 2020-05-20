@@ -8,6 +8,7 @@
         const PLANET_RADIUS = 120 * 1000 / 2; // Default radius of planets.
         const MOON_RADIUS = 19 * 1000 / 2; // Default radius of moons.
         const GRAVITY_RANGE_COEFFICIENT = 1 + 0.7182;
+        const SAFE_DISTANCE = 1 * 1000; // 1km
 
         const findPoint = (Xs, Ys, Zs, Xp, Yp, Zp, type) => {
             const radius = (() => {
@@ -18,7 +19,7 @@
                 }
             })();
 
-            const gravityRadius = radius * GRAVITY_RANGE_COEFFICIENT;
+            const gravityRadius = radius * GRAVITY_RANGE_COEFFICIENT + SAFE_DISTANCE;
 
             const distanceFromShipToPlanet = ((Xs - Xp) ** 2 + (Ys - Yp) ** 2 + (Zs - Zp) ** 2) ** 0.5;
             console.log(distanceFromShipToPlanet);
