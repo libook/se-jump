@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>星球附近的最近跃迁点</title>
     <script>
-        const GPS_REGEXP = /^GPS:[^:]*(:[0-9-.]+){3}:$/;
+        const GPS_REGEXP = /^GPS:[^:]*(:[0-9-.]+){3}(:#[0-9A-F]{8}){0,1}:$/;
         const PLANET_RADIUS = 120 * 1000 / 2; // Default radius of planets.
         const MOON_RADIUS = 19 * 1000 / 2; // Default radius of moons.
         const GRAVITY_RANGE_COEFFICIENT = 1 + 0.7182;
