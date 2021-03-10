@@ -5,26 +5,74 @@
     <title>星球附近的最近跃迁点</title>
     <script>
         const GPS_REGEXP = /^GPS:[^:]*(:[0-9-.]+){3}(:#[0-9A-F]{8}){0,1}:$/;
-        const PLANET_RADIUS = 120 * 1000 / 2; // Default radius of planets.
-        const MOON_RADIUS = 19 * 1000 / 2; // Default radius of moons.
-        const GRAVITY_RANGE_COEFFICIENT = 1 + 0.7182;
         const SAFE_DISTANCE = 1 * 1000; // 1km
 
-        const findPoint = (Xs, Ys, Zs, Xp, Yp, Zp, type) => {
-            const radius = (() => {
-                if (type === 'Planet') {
-                    return PLANET_RADIUS;
-                } else if (type === 'Moon') {
-                    return MOON_RADIUS;
-                }
-            })();
+        const BODY_TABLE = [
+            {
+                "name": "Earthlike",
+                "radius": 60000,
+                "g": 9.8,
+                "gravityAltitude": 42860,
+                "gps": "GPS:Earth:0:0:0:",
+            },
+            {
+                "name": "Moon",
+                "radius": 9500,
+                "g": 2.45,
+                "gravityAltitude": 2678,
+                "gps": "GPS:Moon:16384:136384:-113616:",
+            },
+            {
+                "name": "Mars",
+                "radius": 60000,
+                "g": 8.82,
+                "gravityAltitude": 39311,
+                "gps": "GPS:Mars:1031072:131072:1631072:",
+            },
+            {
+                "name": "Europa",
+                "radius": 9500,
+                "g": 2.452,
+                "gravityAltitude": 2680, // need to be updated
+                "gps": "GPS:Europa:916384:16384:1616384:",
+            },
+            {
+                "name": "Alien",
+                "radius": 60000,
+                "g": 10.78,
+                "gravityAltitude": 39870,
+                "gps": "GPS:Alien:131072:131072:5731072:",
+            },
+            {
+                "name": "Titan",
+                "radius": 9500,
+                "g": 2.45,
+                "gravityAltitude": 2678,
+                "gps": "GPS:Titan:36384:226384:5796384:",
+            },
+            {
+                "name": "Triton",
+                "radius": 40126.5,
+                "g": 9.8,
+                "gravityAltitude": 36000,
+                "gps": "GPS:Triton:-284463.5:-2434463.5:365536.5:",
+            },
+            {
+                "name": "Pertam",
+                "radius": 30000,
+                "g": 11.77,
+                "gravityAltitude": 18510,
+                "gps": "GPS:Pertam:-3967231.50:-32231.50:-767231.50:",
+            },
+        ];
 
-            const gravityRadius = radius * GRAVITY_RANGE_COEFFICIENT + SAFE_DISTANCE;
+        const findPoint = (Xs, Ys, Zs, Xp, Yp, Zp, gravityRadius) => {
+            const gravityRadiusSafe = gravityRadius + SAFE_DISTANCE;
 
             const distanceFromShipToPlanet = ((Xs - Xp) ** 2 + (Ys - Yp) ** 2 + (Zs - Zp) ** 2) ** 0.5;
             console.log(distanceFromShipToPlanet);
 
-            const T = gravityRadius / distanceFromShipToPlanet;
+            const T = gravityRadiusSafe / distanceFromShipToPlanet;
             console.log(T);
 
             const
@@ -52,7 +100,7 @@
             return `GPS:${gpsObject.name}:${gpsObject.x}:${gpsObject.y}:${gpsObject.z}:`;
         };
 
-        window.change = () => {
+        globalThis.change = () => {
             const targetGps = document.getElementById('targetGps');
             targetGps.value = '';
 
@@ -63,12 +111,13 @@
                 shipGpsObj = gpsParser(shipGps),
                 planetGpsObj = gpsParser(planetGps);
 
-            const radioElementList = document.getElementsByName('type');
-            const type = (() => {
-                for (const radioElement of radioElementList) {
-                    if (radioElement.checked) {
-                        return radioElement.value;
-                    }
+            const gravityRadius = (() => {
+                const gravityRadiusString = document.getElementById('gravityRadius').value;
+                const gravityRadiusNumber = Number(gravityRadiusString);
+                if (isNaN(gravityRadiusNumber)) {
+                    return undefined;
+                } else {
+                    return gravityRadiusNumber;
                 }
             })();
 
@@ -88,7 +137,7 @@
                     planetGpsObj.x,
                     planetGpsObj.y,
                     planetGpsObj.z,
-                    type,
+                    gravityRadius,
                 );
                 targetGps.value = gpsToString({
                     "name": `${planetGpsObj.name}-jump`,
@@ -98,10 +147,43 @@
                 });
             }
         };
+
+        // Create default buttons
+        window.addEventListener('load', () => {
+            for (const { name, radius, gravityAltitude, gps } of BODY_TABLE) {
+                const buttonElement = document.createElement('button');
+                buttonElement.innerText = name;
+                buttonElement.addEventListener('click', () => {
+                    document.getElementById('planetGps').value = gps;
+                    document.getElementById('gravityRadius').value = radius + gravityAltitude;
+                    change();
+                }, false);
+                document.getElementById('button-with-default-body').append(buttonElement);
+            }
+        });
     </script>
     <style>
         input[ type="text"] {
             width: 500px;
+        }
+
+        .dashboard > * {
+            margin: 2em 0 2em 0;
+        }
+
+        /*Grid*/
+        #form {
+            display: grid;
+            grid-template-columns: 13em auto;
+            grid-gap: 10px;
+        }
+
+        #form > label {
+            grid-column: 1 / 2;
+        }
+
+        #form > input {
+            grid-column: 2 / 3;
         }
     </style>
 </head>
@@ -111,41 +193,22 @@
     <p>
         太空工程师游戏中的跃迁引擎不能将有自然重力的GPS坐标设置为跃迁目的地，如果希望先跃迁到行星引力圈外再降落的话，可以使用这个工具生成一个飞船到行星引力圈外的最近跃迁目的地GPS坐标。</p>
     <p>
-        用法：选择目的地是行星还是卫星，然后将当前飞船的GPS坐标填入“飞船GPS”框，将行星中心GPS坐标填入“行星GPS”框，跃迁最近GPS坐标会自动显示在“跃迁最近GPS”框中，可以直接复制并粘贴到游戏内。如果使用的是默认的“星系”地图的话，可以直接点击星球的按钮，以便于自动填写预设星球类型以及行星GPS。</p>
+        用法：可以手动填写表单数据，填写完后“跃迁最近GPS”会自动更新，如果使用的是默认的“星系”地图的话，可以直接点击星球的按钮，以便于自动填写预设星球类型以及行星GPS。</p>
 </div>
-<div>
-    <div>
-        <label><input type="radio" name="type" onchange="change()"
-                      value="Planet">行星</label>
-        <label><input type="radio" name="type" onchange="change()" value="Moon">卫星</label>
+<div class="dashboard">
+    <div id="form">
+        <label for="shipGps">飞船GPS：</label>
+        <input type="text" id="shipGps"
+               onchange="change()">
+        <label for="planetGps">行星GPS：</label>
+        <input type="text" id="planetGps"
+               onchange="change()">
+        <label for="gravityRadius">体素半径+引力高度（米）：</label>
+        <input type="text" id="gravityRadius"
+               onchange="change()">
     </div>
-    <div><label>飞船GPS：<input type="text" id="shipGps"
-                             onchange="change()"></label></div>
-    <div><label>行星GPS：<input type="text" id="planetGps"
-                             onchange="change()"></label></div>
-    <div>
-        <button onclick="document.querySelector('input[value=Planet]').checked=true;document.getElementById('planetGps').value='GPS:Earth:0:0:0:';change();">
-            地球(Earth)
-        </button>
-        <button onclick="document.querySelector('input[value=Moon]').checked=true;document.getElementById('planetGps').value='GPS:Moon:16384:136384:-113616:';change();">
-            月球(Moon)
-        </button>
-        <button onclick="document.querySelector('input[value=Planet]').checked=true;document.getElementById('planetGps').value='GPS:Mars:1031072:131072:1631072:';change();">
-            火星(Mars)
-        </button>
-        <button onclick="document.querySelector('input[value=Moon]').checked=true;document.getElementById('planetGps').value='GPS:Europa:916384:16384:1616384:';change();">
-            欧罗巴(Europa)
-        </button>
-        <button onclick="document.querySelector('input[value=Planet]').checked=true;document.getElementById('planetGps').value='GPS:Alien:131072:131072:5731072:';change();">
-            异星(Alien)
-        </button>
-        <button onclick="document.querySelector('input[value=Moon]').checked=true;document.getElementById('planetGps').value='GPS:Titan:36384:226384:5796384:';change();">
-            泰坦(Titan)
-        </button>
-        <button onclick="document.querySelector('input[value=Planet]').checked=true;document.getElementById('planetGps').value='GPS:Triton:-284463.5:-2434463.5:365536.5:';change();">
-            特里同(Triton)
-        </button>
-    </div>
+
+    <div id="button-with-default-body"></div>
     <div><label>跃迁最近GPS：<input type="text" readonly id="targetGps"></label>
     </div>
 </div>
